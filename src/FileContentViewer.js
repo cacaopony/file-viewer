@@ -1,12 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function FileManager() {
   const [fileName, setFileName] = useState('');
+  const [fileList, setFileList] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  // GET: ファイル内容を取得
+  // ファイルリストを取得する関数
+  const fetchFileList = async () => {
+    try {
+      const response = await axios.get('/files/list');
+      setFileList(response.data); // ファイルリストを状態に保存
+      setError('');
+    } catch (err) {
+      setError('ファイルリストの取得に失敗しました。');
+    }
+  };
+
+  // 初回レンダリング時にファイルリストを取得
+  useEffect(() => {
+    fetchFileList();
+  }, []);
+
+  // ファイル内容を取得する関数
   const fetchFileContent = async () => {
     try {
       const response = await axios.get(`/files/${fileName}`);
@@ -18,7 +35,7 @@ function FileManager() {
     }
   };
 
-  // POST: 新しいファイルを作成
+  // 新しいファイルを作成する関数
   const createFile = async () => {
     try {
       const response = await axios.post('/files', null, {
@@ -26,6 +43,7 @@ function FileManager() {
       });
       setMessage(response.data);
       setError('');
+      fetchFileList(); // ファイルリストを更新
     } catch (err) {
       if (err.response?.status === 409) {
         setError('ファイルは既に存在しています。');
@@ -40,8 +58,32 @@ function FileManager() {
     <div style={{ margin: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>ファイル管理ツール</h1>
 
-      {/* ファイル名入力 */}
+      {/* ファイルリストの表示 */}
       <div>
+        <h2>ファイルリスト:</h2>
+        {error ? (
+          <p style={{ color: 'red' }}>{error}</p>
+        ) : (
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {fileList.map((file, index) => (
+              <li
+                key={index}
+                style={{
+                  padding: '5px 0',
+                  borderBottom: '1px solid #ccc',
+                  cursor: 'pointer',
+                }}
+                onClick={() => setFileName(file)} // ファイル名を選択
+              >
+                {file}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* ファイル名の入力 */}
+      <div style={{ marginTop: '20px' }}>
         <label htmlFor="fileName">ファイル名: </label>
         <input
           type="text"
@@ -86,7 +128,6 @@ function FileManager() {
 
       {/* メッセージ表示 */}
       <div style={{ marginTop: '20px' }}>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
         {message && (
           <pre
             style={{
