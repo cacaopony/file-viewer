@@ -43,7 +43,8 @@ function FileManager() {
       });
       setMessage(response.data);
       setError('');
-      fetchFileList(); // ファイルリストを更新
+      setTimeout(fetchFileList, 1000);
+       // ファイルリストを更新
     } catch (err) {
       if (err.response?.status === 409) {
         setError('ファイルは既に存在しています。');
@@ -53,6 +54,9 @@ function FileManager() {
       setMessage('');
     }
   };
+
+  //ファイルを削除する関数
+  // const deleteFile 
 
   return (
     <div style={{ margin: '20px', fontFamily: 'Arial, sans-serif' }}>
@@ -115,6 +119,7 @@ function FileManager() {
           onClick={createFile}
           style={{
             padding: '10px 15px',
+            marginRight: '10px',
             backgroundColor: '#008CBA',
             color: 'white',
             border: 'none',
@@ -123,6 +128,20 @@ function FileManager() {
           }}
         >
           ファイルを作成
+        </button>
+
+        <button
+          // onClick={}
+          style={{
+            padding: '10px 15px',
+            backgroundColor: '#008CBA',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          ファイルを削除
         </button>
       </div>
 
